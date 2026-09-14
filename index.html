@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GI Sandbox - Ground Infiltration Model Explorer</title>
+    <meta name="description" content="Interactive exploration of Infoworks ICM Ground Infiltration model parameters">
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+</head>
+
+<body>
+    <header>
+        <h1>🌧️ GI Sandbox</h1>
+        <p class="subtitle">Ground Infiltration Model Explorer</p>
+        <!-- Tab Navigation -->
+        <nav class="main-tabs">
+            <button id="tabSandbox" class="main-tab active">Sandbox</button>
+            <button id="tabCalibration" class="main-tab">Calibration</button>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Sandbox Tab Content -->
+        <div id="sandboxContent" class="tab-content active">
+
+            <!-- Parameter Panel (Sidebar) -->
+            <aside class="parameter-panel">
+                <div class="params-grid">
+                    <!-- GI Parameters Section -->
+                    <details class="param-section" open>
+                        <summary>GI Parameters</summary>
+                        <div class="param-group">
+                            <label for="soilDepth"
+                                title="This is the depth of the Soil Store. This depth times the Subcatchment Area times the Porosity of Soil gives the capacity of the soil store.">
+                                <span class="param-name">Soil Depth</span>
+                                <span class="param-value"><input type="number" id="soilDepthValue" value="0.01"
+                                        step="0.1" min="0.001" max="1"> m</span>
+                            </label>
+                            <input type="range" id="soilDepth" min="0.001" max="1" step="0.1" value="0.01">
+
+                            <label for="soilPorosity"
+                                title="This is the porosity of the soil. 0% porosity means that there are no voids and the soil store has no capacity. 100% porosity means there is 100% effective storage in the soil store. The lower the porosity then the quicker the water level will rise.">
+                                <span class="param-name">Porosity of Soil</span>
+                                <span class="param-value"><input type="number" id="soilPorosityValue" value="20"
+                                        step="1" min="1" max="60"> %</span>
+                            </label>
+                            <input type="range" id="soilPorosity" min="1" max="60" step="1" value="20">
+
+                            <label for="percolationThreshold"
+                                title="This is the threshold (in % of soil store depth) that water in the soil store has to reach before it can start to infiltrate the network or ground store.">
+                                <span class="param-name">Percolation Threshold</span>
+                                <span class="param-value"><input type="number" id="percolationThresholdValue" value="10"
+                                        step="1" min="0" max="100"> %</span>
+                            </label>
+                            <input type="range" id="percolationThreshold" min="0" max="100" step="1" value="10">
+
+                            <label for="percolationPctInfiltrating"
+                                title="This is the percentage of water above the percolation threshold that can infiltrate the network. The remainder enters the ground store.">
+                                <span class="param-name">Percolation % Infiltrating</span>
+                                <span class="param-value"><input type="number" id="percolationPctInfiltratingValue"
+                                        value="0" step="1" min="0" max="100"> %</span>
+                            </label>
+                            <input type="range" id="percolationPctInfiltrating" min="0" max="100" step="1" value="0">
+
+                            <label for="percolationCoeff"
+                                title="This is how fast the water in the soil store can percolate down and begin to infiltrate the network or the ground store.">
+                                <span class="param-name">Percolation Coefficient</span>
+                                <span class="param-value"><input type="number" id="percolationCoeffValue" value="0.01"
+                                        step="0.1" min="0.001" max="10"> days</span>
+                            </label>
+                            <input type="range" id="percolationCoeff" min="0.001" max="10" step="0.1" value="0.01">
+
+                            <label for="groundPorosity"
+                                title="This is the porosity of the ground. 0% porosity means that there are no voids and the ground store has no capacity. 100% porosity means there is 100% effective storage in the ground store. The lower the porosity then the quicker the water level will rise.">
+                                <span class="param-name">Porosity of Ground</span>
+                                <span class="param-value"><input type="number" id="groundPorosityValue" value="20"
+                                        step="1" min="1" max="60"> %</span>
+                            </label>
+                            <input type="range" id="groundPorosity" min="1" max="60" step="1" value="20">
+
+                            <label for="infiltrationThreshold"
+                                title="This is the threshold (in meters) that water in the ground store has to reach before it can start to infiltrate as ground infiltration.">
+                                <span class="param-name">Infiltration Threshold Level</span>
+                                <span class="param-value"><input type="number" id="infiltrationThresholdValue"
+                                        value="0.02" step="0.1" min="0" max="5"> m</span>
+                            </label>
+                            <input type="range" id="infiltrationThreshold" min="0" max="5" step="0.1" value="0.02">
+
+                            <label for="infiltrationCoeff"
+                                title="This is how fast the water in the ground store can leave and infiltrate the network as ground infiltration.">
+                                <span class="param-name">Infiltration Coefficient</span>
+                                <span class="param-value"><input type="number" id="infiltrationCoeffValue" value="0.1"
+                                        step="0.1" min="0.01" max="10"> days</span>
+                            </label>
+                            <input type="range" id="infiltrationCoeff" min="0.01" max="10" step="0.1" value="0.1">
+
+                            <label for="baseflowThreshold"
+                                title="This is the threshold (in meters) that water in the ground store has to reach before it can start to infiltrate as baseflow.">
+                                <span class="param-name">Baseflow Threshold Level</span>
+                                <span class="param-value"><input type="number" id="baseflowThresholdValue" value="0"
+                                        step="0.1" min="0" max="5"> m</span>
+                            </label>
+                            <input type="range" id="baseflowThreshold" min="0" max="5" step="0.1" value="0">
+
+                            <label for="baseflowCoeff"
+                                title="This is how fast the water in the ground store can leave as baseflow.">
+                                <span class="param-name">Baseflow Coefficient</span>
+                                <span class="param-value"><input type="number" id="baseflowCoeffValue" value="10"
+                                        step="0.1" min="0.1" max="100"> days</span>
+                            </label>
+                            <input type="range" id="baseflowCoeff" min="0.1" max="100" step="0.1" value="10">
+                        </div>
+                    </details>
+
+                    <!-- Input Parameters Section -->
+                    <details class="param-section" open>
+                        <summary>Input Parameters</summary>
+                        <div class="param-group">
+                            <label for="rainfallDepth">
+                                <span class="param-name">Rainfall Depth</span>
+                                <span class="param-value"><input type="number" id="rainfallDepthValue" value="10"
+                                        step="1" min="1" max="200"> mm</span>
+                            </label>
+                            <input type="range" id="rainfallDepth" min="1" max="200" step="1" value="10">
+
+                            <label for="depressionStorage">
+                                <span class="param-name">Depression Storage</span>
+                                <span class="param-value"><input type="number" id="depressionStorageValue" value="0"
+                                        step="0.1" min="0" max="20"> mm</span>
+                            </label>
+                            <input type="range" id="depressionStorage" min="0" max="20" step="0.1" value="0">
+
+                            <label for="evaporationRate">
+                                <span class="param-name">Evaporation Rate</span>
+                                <span class="param-value"><input type="number" id="evaporationRateValue" value="0"
+                                        step="0.1" min="0" max="20"> mm/day</span>
+                            </label>
+                            <input type="range" id="evaporationRate" min="0" max="20" step="0.1" value="0">
+
+                            <label for="subcatchmentArea">
+                                <span class="param-name">Subcatchment Area</span>
+                                <span class="param-value"><input type="number" id="subcatchmentAreaValue" value="50"
+                                        step="1" min="1" max="500"> Ha</span>
+                            </label>
+                            <input type="range" id="subcatchmentArea" min="1" max="500" step="1" value="50">
+
+                            <label for="percentageRunoff">
+                                <span class="param-name">Percentage Runoff</span>
+                                <span class="param-value"><input type="number" id="percentageRunoffValue" value="0"
+                                        step="1" min="0" max="100"> %</span>
+                            </label>
+                            <input type="range" id="percentageRunoff" min="0" max="100" step="1" value="0">
+
+                            <label for="estimatedPeakFlow">
+                                <span class="param-name">Estimated Peak Flow</span>
+                                <span class="param-value"><input type="number" id="estimatedPeakFlowValue" value="0.1"
+                                        step="0.01" min="0.01" max="10"> m³/s</span>
+                            </label>
+                            <input type="range" id="estimatedPeakFlow" min="0.01" max="10" step="0.01" value="0.1">
+
+                            <label for="timeInterval">
+                                <span class="param-name">Time Interval</span>
+                                <span class="param-value"><input type="number" id="timeIntervalValue" value="2"
+                                        step="0.5" min="0.5" max="30"> min</span>
+                            </label>
+                            <input type="range" id="timeInterval" min="0.5" max="30" step="0.5" value="2">
+
+                            <label for="coverLevel">
+                                <span class="param-name">Cover Level</span>
+                                <span class="param-value"><input type="number" id="coverLevelValue" value="46.74"
+                                        step="0.01" min="0" max="100"> mAOD</span>
+                            </label>
+
+                            <label for="initialSoilDepth">
+                                <span class="param-name">Initial Soil Depth</span>
+                                <span class="param-value"><input type="number" id="initialSoilDepthValue" value="10"
+                                        step="1" min="0" max="100"> %</span>
+                            </label>
+                            <input type="range" id="initialSoilDepth" min="0" max="100" step="1" value="10">
+
+                            <label for="initialGWLevel">
+                                <span class="param-name">Initial Groundwater Level</span>
+                                <span class="param-value"><input type="number" id="initialGWLevelValue" value="45"
+                                        step="0.1" min="0" max="100"> mAOD</span>
+                            </label>
+
+                            <label for="nodeBackwaterLevel">
+                                <span class="param-name">Node Backwater Level</span>
+                                <span class="param-value"><input type="number" id="nodeBackwaterLevelValue" value="0"
+                                        step="0.1" min="0" max="50"> mAOD</span>
+                            </label>
+                        </div>
+                    </details>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="button-group">
+                    <button id="resetDefaults" class="btn btn-secondary">Example Values</button>
+                    <button id="setScWDefaults" class="btn btn-primary">Set ScW Defaults</button>
+                </div>
+            </aside>
+
+            <!-- Visualization Panel -->
+            <section class="visualization-panel">
+                <!-- View Toggle -->
+                <div class="view-toggle">
+                    <button id="viewSchematic" class="toggle-btn">Schematic</button>
+                    <button id="viewScene" class="toggle-btn active">Scene View</button>
+                </div>
+
+                <!-- Interactive Schematic (hidden by default) -->
+                <div class="schematic-container" id="schematicView" style="display: none;">
+                    <svg id="schematic" viewBox="0 0 1050 630" preserveAspectRatio="xMidYMid meet">
+                        <!-- Will be populated by schematic.js -->
+                    </svg>
+                </div>
+
+                <!-- Scene View (default view) -->
+                <div class="scene-container" id="sceneView">
+                    <svg id="scene-svg" viewBox="0 0 1024 600" preserveAspectRatio="xMidYMid meet">
+                        <defs>
+                            <!-- Sky gradient -->
+                            <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:#0a1628" />
+                                <stop offset="100%" style="stop-color:#1a2d4a" />
+                            </linearGradient>
+                            <!-- Grass gradient -->
+                            <linearGradient id="grassGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:#4a7c59" />
+                                <stop offset="100%" style="stop-color:#3d6b4a" />
+                            </linearGradient>
+                            <!-- Soil gradient -->
+                            <linearGradient id="soilGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:#6b5344" />
+                                <stop offset="100%" style="stop-color:#5a4639" />
+                            </linearGradient>
+                            <!-- Ground gradient -->
+                            <linearGradient id="groundGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:#4a3d32" />
+                                <stop offset="100%" style="stop-color:#3a2f26" />
+                            </linearGradient>
+                            <!-- Deep ground -->
+                            <linearGradient id="deepGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:#2d2520" />
+                                <stop offset="100%" style="stop-color:#1a1512" />
+                            </linearGradient>
+                            <!-- Drop gradient -->
+                            <linearGradient id="dropGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#7ec8e3" />
+                                <stop offset="100%" style="stop-color:#4da6ff" />
+                            </linearGradient>
+                            <!-- Arrow markers -->
+                            <marker id="sceneArrowPurple" markerWidth="10" markerHeight="7" refX="9" refY="3.5"
+                                orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#7c5cff" />
+                            </marker>
+                            <marker id="sceneArrowCyan" markerWidth="10" markerHeight="7" refX="9" refY="3.5"
+                                orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#00d4aa" />
+                            </marker>
+                            <marker id="sceneArrowPink" markerWidth="10" markerHeight="7" refX="9" refY="3.5"
+                                orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#ff7eb3" />
+                            </marker>
+                            <marker id="sceneArrowOrange" markerWidth="10" markerHeight="7" refX="9" refY="3.5"
+                                orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#ffaa00" />
+                            </marker>
+                            <!-- Cloud shadow -->
+                            <filter id="cloudShadow" x="-20%" y="-20%" width="140%" height="140%">
+                                <feDropShadow dx="2" dy="3" stdDeviation="3" flood-color="#000" flood-opacity="0.3" />
+                            </filter>
+                        </defs>
+
+                        <!-- SKY -->
+                        <rect x="0" y="0" width="1024" height="600" fill="url(#skyGrad)" />
+
+                        <!-- GRASS SURFACE (sloped) -->
+                        <polygon points="0,140 700,180 700,200 0,160" fill="url(#grassGrad)" />
+
+                        <!-- SOIL LAYER -->
+                        <polygon points="0,160 700,200 1024,200 1024,320 0,280" fill="url(#soilGrad)" />
+
+                        <!-- GROUND LAYER -->
+                        <polygon points="0,280 1024,320 1024,480 0,440" fill="url(#groundGrad)" />
+
+                        <!-- DEEP GROUND -->
+                        <polygon points="0,440 1024,480 1024,600 0,600" fill="url(#deepGrad)" />
+
+                        <!-- LAYER BOUNDARIES -->
+                        <line x1="0" y1="160" x2="700" y2="200" stroke="#7a6b5c" stroke-width="2" opacity="0.5" />
+                        <line x1="700" y1="200" x2="1024" y2="200" stroke="#7a6b5c" stroke-width="2" opacity="0.5" />
+                        <line x1="0" y1="280" x2="1024" y2="320" stroke="#5a4d42" stroke-width="2" opacity="0.4" />
+                        <line x1="0" y1="440" x2="1024" y2="480" stroke="#3a3028" stroke-width="2" opacity="0.3" />
+
+                        <!-- GULLY/DRAIN -->
+                        <g id="drain">
+                            <rect x="700" y="170" width="80" height="30" fill="#2a3a4a" stroke="#1a2a3a"
+                                stroke-width="2" />
+                            <line x1="710" y1="175" x2="710" y2="195" stroke="#4a5a6a" stroke-width="2" />
+                            <line x1="720" y1="175" x2="720" y2="195" stroke="#4a5a6a" stroke-width="2" />
+                            <line x1="730" y1="175" x2="730" y2="195" stroke="#4a5a6a" stroke-width="2" />
+                            <line x1="740" y1="175" x2="740" y2="195" stroke="#4a5a6a" stroke-width="2" />
+                            <line x1="750" y1="175" x2="750" y2="195" stroke="#4a5a6a" stroke-width="2" />
+                            <line x1="760" y1="175" x2="760" y2="195" stroke="#4a5a6a" stroke-width="2" />
+                            <line x1="770" y1="175" x2="770" y2="195" stroke="#4a5a6a" stroke-width="2" />
+                            <rect x="720" y="200" width="40" height="80" fill="#3a4a5a" stroke="#2a3a4a"
+                                stroke-width="2" />
+                        </g>
+
+                        <!-- PIPE OUTLET -->
+                        <g id="pipe" transform="translate(800, 260)">
+                            <ellipse cx="60" cy="40" rx="55" ry="40" fill="#4a5a6a" stroke="#3a4a5a" stroke-width="3" />
+                            <ellipse cx="60" cy="40" rx="45" ry="32" fill="#2a3a4a" />
+                            <ellipse cx="60" cy="50" rx="40" ry="20" fill="#3a7ca5" opacity="0.7" />
+                            <ellipse cx="60" cy="40" rx="55" ry="40" fill="none" stroke="#5a6a7a" stroke-width="2" />
+                            <rect x="-60" y="15" width="70" height="50" fill="#4a5a6a" stroke="#3a4a5a"
+                                stroke-width="2" />
+                        </g>
+
+                        <!-- RAIN CLOUD -->
+                        <g id="cloud" transform="translate(200, 30)" filter="url(#cloudShadow)">
+                            <ellipse cx="60" cy="50" rx="50" ry="35" fill="#b8c5d4" />
+                            <ellipse cx="30" cy="55" rx="35" ry="28" fill="#c5d1de" />
+                            <ellipse cx="100" cy="55" rx="40" ry="30" fill="#aab8c8" />
+                            <ellipse cx="65" cy="35" rx="35" ry="25" fill="#d0dae6" />
+                        </g>
+
+                        <!-- RAIN DROPS -->
+                        <g id="raindrops">
+                            <ellipse cx="220" cy="100" rx="3" ry="6" fill="url(#dropGrad)" />
+                            <ellipse cx="240" cy="110" rx="3" ry="6" fill="url(#dropGrad)" />
+                            <ellipse cx="260" cy="95" rx="3" ry="6" fill="url(#dropGrad)" />
+                            <ellipse cx="280" cy="105" rx="3" ry="6" fill="url(#dropGrad)" />
+                            <ellipse cx="230" cy="120" rx="2" ry="5" fill="url(#dropGrad)" />
+                            <ellipse cx="255" cy="125" rx="2" ry="5" fill="url(#dropGrad)" />
+                            <ellipse cx="275" cy="115" rx="2" ry="5" fill="url(#dropGrad)" />
+                        </g>
+
+                        <!-- FLOW ARROWS -->
+                        <g id="flow-arrows">
+                            <path d="M 300 165 Q 500 175, 695 180" fill="none" stroke="#7c5cff" stroke-width="4"
+                                stroke-linecap="round" marker-end="url(#sceneArrowPurple)" opacity="0.9" />
+                            <text x="450" y="155" fill="#7c5cff" font-size="12" font-weight="600">RUNOFF</text>
+
+                            <path d="M 450 260 Q 600 255, 735 275" fill="none" stroke="#00d4aa" stroke-width="3"
+                                stroke-linecap="round" marker-end="url(#sceneArrowCyan)" opacity="0.9" />
+                            <text x="560" y="245" fill="#00d4aa" font-size="11" font-weight="600">SOIL INF</text>
+
+                            <path d="M 450 400 Q 600 380, 800 320" fill="none" stroke="#ff7eb3" stroke-width="3"
+                                stroke-linecap="round" marker-end="url(#sceneArrowPink)" opacity="0.9" />
+                            <text x="580" y="370" fill="#ff7eb3" font-size="11" font-weight="600">GROUND INF</text>
+
+                            <path d="M 450 470 Q 700 500, 950 540" fill="none" stroke="#ffaa00" stroke-width="3"
+                                stroke-linecap="round" stroke-dasharray="8,4" marker-end="url(#sceneArrowOrange)"
+                                opacity="0.8" />
+                            <text x="700" y="520" fill="#ffaa00" font-size="11" font-weight="600">BASEFLOW → lost</text>
+
+                            <path d="M 300 295 L 300 340" fill="none" stroke="#00d4aa" stroke-width="2"
+                                stroke-dasharray="4,3" marker-end="url(#sceneArrowCyan)" opacity="0.7" />
+                            <text x="310" y="320" fill="#00d4aa" font-size="10">perc</text>
+                        </g>
+
+                        <!-- CHART PLACEHOLDERS -->
+                        <rect id="placeholder-qrain" x="350" y="20" width="160" height="90" fill="rgba(15,22,40,0.85)"
+                            stroke="#4da6ff" stroke-width="2" rx="4" />
+                        <text x="430" y="40" fill="#4da6ff" font-size="11" text-anchor="middle"
+                            font-weight="600">Qrain</text>
+
+                        <rect id="placeholder-soil" x="150" y="175" width="200" height="100" fill="rgba(15,22,40,0.85)"
+                            stroke="#00d4aa" stroke-width="2" rx="4" />
+                        <text x="250" y="195" fill="#00d4aa" font-size="11" text-anchor="middle" font-weight="600">SOIL
+                            STORE</text>
+
+                        <rect id="placeholder-ground" x="150" y="330" width="200" height="120"
+                            fill="rgba(15,22,40,0.85)" stroke="#ff7eb3" stroke-width="2" rx="4" />
+                        <text x="250" y="350" fill="#ff7eb3" font-size="11" text-anchor="middle"
+                            font-weight="600">GROUND
+                            STORE</text>
+
+                        <rect id="placeholder-qnetwork" x="820" y="380" width="180" height="100"
+                            fill="rgba(15,22,40,0.85)" stroke="#7dffaf" stroke-width="2" rx="4" />
+                        <text x="910" y="400" fill="#7dffaf" font-size="11" text-anchor="middle"
+                            font-weight="600">Qnetwork</text>
+
+                        <!-- LABELS -->
+                        <text x="20" y="250" fill="#8a7b6c" font-size="12" font-weight="500" opacity="0.8">SOIL
+                            LAYER</text>
+                        <text x="20" y="380" fill="#6a5d52" font-size="12" font-weight="500" opacity="0.8">GROUND
+                            LAYER</text>
+                    </svg>
+                </div>
+
+
+                <!-- Summary Statistics -->
+                <!-- Summary Statistics -->
+                <div class="summary-panel">
+                    <details open>
+                        <summary>
+                            <h3>📋 Summary Statistics</h3>
+                        </summary>
+
+                        <div class="stats-container">
+                            <!-- Inputs -->
+                            <div class="stats-group">
+                                <h4>Inputs</h4>
+                                <div class="stats-grid-compact">
+                                    <div class="stat-card">
+                                        <span class="stat-label">Rainfall Volume</span>
+                                        <span class="stat-value" id="statRainfallVol">0 m³</span>
+                                    </div>
+                                    <div class="stat-card">
+                                        <span class="stat-label">Initial Storage</span>
+                                        <span class="stat-value" id="statInitialVol">0 m³</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Outputs -->
+                            <div class="stats-group">
+                                <h4>Outputs</h4>
+                                <div class="stats-grid-compact">
+                                    <div class="stat-card">
+                                        <span class="stat-label">Network Discharge</span>
+                                        <span class="stat-value" id="statNetworkVol">0 m³</span>
+                                    </div>
+                                    <div class="stat-card">
+                                        <span class="stat-label">Baseflow Loss</span>
+                                        <span class="stat-value" id="statBaseflowVol">0 m³</span>
+                                    </div>
+                                    <div class="stat-card">
+                                        <span class="stat-label">Evaporation Loss</span>
+                                        <span class="stat-value" id="statEvaporationVol">0 m³</span>
+                                    </div>
+                                    <div class="stat-card">
+                                        <span class="stat-label">Final Depression</span>
+                                        <span class="stat-value" id="statFinalDepressionVol">0 m³</span>
+                                    </div>
+                                    <div class="stat-card">
+                                        <span class="stat-label">Final Soil Vol</span>
+                                        <span class="stat-value" id="statFinalSoilVol">0 m³</span>
+                                    </div>
+                                    <div class="stat-card">
+                                        <span class="stat-label">Final Ground Vol</span>
+                                        <span class="stat-value" id="statFinalGroundVol">0 m³</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Balance -->
+                            <div class="stats-group">
+                                <h4>Balance</h4>
+                                <div class="stat-card highlight">
+                                    <span class="stat-label">Continuity Residual</span>
+                                    <span class="stat-value" id="statContinuity">0 m³</span>
+                                </div>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+
+                <!-- Export Button -->
+                <div class="export-section">
+                    <button id="exportCSV" class="btn btn-secondary">📥 Export CSV</button>
+                </div>
+            </section>
+        </div> <!-- End Sandbox Tab Content -->
+
+        <!-- Calibration Tab Content -->
+        <div id="calibrationContent" class="tab-content">
+            <div class="calibration-layout">
+                <!-- Left: File Upload & Column Mapping -->
+                <aside class="calibration-sidebar">
+                    <details class="param-section" open>
+                        <summary>📁 Data Import</summary>
+
+                        <!-- File Upload -->
+                        <div id="calibrationDropzone" class="dropzone">
+                            <p>📂 Drop file here or click to browse</p>
+                            <p class="hint">Supports .csv, .red, .hyq</p>
+                        </div>
+                        <input type="file" id="calibrationFileInput" accept=".csv,.red,.hyq" hidden>
+
+                        <div id="calibrationStatus" class="status-info"></div>
+
+                        <div id="calibrationControls" style="display: none;">
+                            <!-- Column Mapping -->
+                            <div class="mapping-section">
+                                <h4>Column Mapping</h4>
+                                <label>
+                                    Rainfall: <span class="hint">(mm/hr)</span>
+                                    <select id="rainfallColumn"></select>
+                                </label>
+                                <label>
+                                    Observed Flow:
+                                    <select id="observedFlowColumn"></select>
+                                </label>
+                                <label>
+                                    Predicted Flow:
+                                    <select id="predictedFlowColumn"></select>
+                                </label>
+                                <div class="timestep-display">
+                                    Detected Timestep: <strong id="detectedTimestep">--</strong>
+                                </div>
+                            </div>
+                        </div> <!-- end calibrationControls -->
+                    </details>
+
+                    <!-- Environmental Parameters -->
+                    <details class="param-section" open>
+                        <summary>Environmental Parameters</summary>
+                        <div class="param-group">
+                            <label>
+                                <span class="param-name">GI Area</span>
+                                <span class="param-value"><input type="number" id="calGiArea" value="0.01" step="0.001"
+                                        min="0.001"> ha</span>
+                            </label>
+                            <label>
+                                <span class="param-name">Depression Storage</span>
+                                <span class="param-value"><input type="number" id="calDepressionStorage" value="0"
+                                        step="0.5" min="0"> mm</span>
+                            </label>
+                            <label>
+                                <span class="param-name">Evaporation Rate</span>
+                                <span class="param-value"><input type="number" id="calEvaporationRate" value="0"
+                                        step="0.5" min="0"> mm/day</span>
+                            </label>
+                            <label>
+                                <span class="param-name">Cover Level</span>
+                                <span class="param-value"><input type="number" id="calCoverLevel" value="50" step="0.1">
+                                    mAOD</span>
+                            </label>
+                            <label>
+                                <span class="param-name">Node Backwater Level</span>
+                                <span class="param-value"><input type="number" id="calNodeBackwaterLevel" value="0"
+                                        step="0.1" min="0"> mAOD</span>
+                            </label>
+                        </div>
+                    </details>
+
+                    <!-- Initial Conditions -->
+                    <details class="param-section" open>
+                        <summary>Initial Conditions</summary>
+                        <div class="param-group">
+                            <label>
+                                <span class="param-name">Initial Soil Depth</span>
+                                <span class="param-value"><input type="number" id="calInitialSoilDepth" value="0"
+                                        step="1" min="0" max="100"> %</span>
+                            </label>
+                            <label>
+                                <span class="param-name">Initial GW Level</span>
+                                <span class="param-value"><input type="number" id="calInitialGWLevel" value="48.5"
+                                        step="0.1"> mAOD</span>
+                            </label>
+                        </div>
+                    </details>
+
+                    <!-- GI Parameters -->
+                    <details class="param-section">
+                        <summary>GI Parameters</summary>
+                        <div class="param-group">
+                            <label>
+                                <span class="param-name">Soil Depth</span>
+                                <span class="param-value"><input type="number" id="calSoilDepth" value="0.01" step="0.1"
+                                        min="0.001" max="1"> m</span>
+                            </label>
+                            <label>
+                                <span class="param-name">Soil Porosity</span>
+                                <span class="param-value"><input type="number" id="calSoilPorosity" value="20" step="1"
+                                        min="1" max="60"> %</span>
+                            </label>
+                            <label>
+                                <span class="param-name">Percolation Threshold</span>
+                                <span class="param-value"><input type="number" id="calPercolationThreshold" value="10"
+                                        step="1" min="0" max="100"> %</span>
+                            </label>
+                            <label>
+                                <span class="param-name">Percolation % Infiltrating</span>
+                                <span class="param-value"><input type="number" id="calPercolationPctInfiltrating"
+                                        value="0" step="1" min="0" max="100"> %</span>
+                            </label>
+                            <label>
+                                <span class="param-name">Percolation Coeff</span>
+                                <span class="param-value"><input type="number" id="calPercolationCoeff" value="0.01"
+                                        step="0.1" min="0.001" max="10"> days</span>
+                            </label>
+                            <label>
+                                <span class="param-name">Ground Porosity</span>
+                                <span class="param-value"><input type="number" id="calGroundPorosity" value="20"
+                                        step="1" min="1" max="60"> %</span>
+                            </label>
+                            <label>
+                                <span class="param-name">Infiltration Threshold</span>
+                                <span class="param-value"><input type="number" id="calInfiltrationThreshold"
+                                        value="0.02" step="0.1" min="0" max="5"> m</span>
+                            </label>
+                            <label>
+                                <span class="param-name">Infiltration Coeff</span>
+                                <span class="param-value"><input type="number" id="calInfiltrationCoeff" value="0.1"
+                                        step="0.1" min="0.01" max="10"> days</span>
+                            </label>
+                            <label>
+                                <span class="param-name">Baseflow Threshold</span>
+                                <span class="param-value"><input type="number" id="calBaseflowThreshold" value="0"
+                                        step="0.1" min="0" max="5"> m</span>
+                            </label>
+                            <label>
+                                <span class="param-name">Baseflow Coeff</span>
+                                <span class="param-value"><input type="number" id="calBaseflowCoeff" value="10"
+                                        step="0.1" min="0.1" max="100"> days</span>
+                            </label>
+                        </div>
+                    </details>
+
+
+                </aside>
+
+                <!-- Right: Visualization Area -->
+                <section class="calibration-main">
+                    <!-- View Toggle Tabs -->
+                    <nav class="cal-view-tabs">
+                        <button id="calTabSchematic" class="cal-view-tab active">Schematic</button>
+                        <button id="calTabChart" class="cal-view-tab">Flow Comparison</button>
+                    </nav>
+
+                    <!-- Schematic View Pane -->
+                    <div id="calViewSchematic" class="cal-view-pane active">
+                        <div class="calibration-schematic-container">
+                            <svg id="calibrationSchematic" viewBox="0 0 1050 630" preserveAspectRatio="xMidYMid meet">
+                                <!-- Will be populated by schematic.js -->
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Flow Comparison Pane -->
+                    <div id="calViewChart" class="cal-view-pane" style="display:none;">
+                        <div style="text-align:right; padding: 4px 8px 0;">
+                            <button id="exportCalibrationCSV" class="btn btn-secondary" style="font-size:0.8rem; padding:4px 10px;">📥 Export CSV</button>
+                        </div>
+                        <div class="calibration-chart-flow-layout" style="display: flex; height: 100%;">
+                            <div class="calibration-chart-wrapper"
+                                style="display: flex; flex-direction: column; flex: 1; min-height: 0;">
+
+                                <div class="calibration-chart-container"
+                                    style="display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden;">
+                                    <div class="calibration-chart-header" style="flex: 0 0 auto;">
+                                        <div class="chart-controls"
+                                            style="display: flex; gap: 1rem; align-items: start;">
+                                            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                                <label><input type="checkbox" id="showStorePlot"> Store Plot</label>
+                                                <div id="storePlotControls" class="button-group-small"
+                                                    style="display: none; gap: 4px;">
+                                                    <button id="calToggleAll" class="btn-xs active"
+                                                        title="Show All Layers">All</button>
+                                                    <button id="calToggleSoil" class="btn-xs"
+                                                        title="Show Soil Layers Only">Soil</button>
+                                                    <button id="calToggleGround" class="btn-xs"
+                                                        title="Show Ground Layers Only">Ground</button>
+                                                </div>
+                                            </div>
+                                            <div style="flex: 1;"></div>
+                                            <span class="chart-zoom-hint">Drag to zoom • Double-click to reset</span>
+                                            <button id="calResetZoom" class="cal-view-tab"
+                                                style="padding: 3px 10px; font-size: 0.75rem;">Reset Zoom</button>
+                                        </div>
+                                    </div>
+                                    <div id="storeChartWrapper"
+                                        style="flex: 1; min-height: 0; display: none; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; margin-bottom: 5px;">
+                                        <canvas id="storeChart"></canvas>
+                                    </div>
+                                    <div id="flowChartWrapper" style="flex: 1; min-height: 0;">
+                                        <canvas id="calibrationChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="calibration-stats-wrapper">
+                                <h4>📊 Calibration Stats</h4>
+                                <div class="calibration-stats">
+                                    <div class="stat-row">
+                                        <span class="stat-label">Peak Observed:</span>
+                                        <span class="stat-value" id="calStatPeakObs">--</span>
+                                    </div>
+                                    <div class="stat-row">
+                                        <span class="stat-label">Peak Simulated:</span>
+                                        <span class="stat-value" id="calStatPeakSim">--</span>
+                                    </div>
+                                    <div class="stat-row">
+                                        <span class="stat-label">Total Observed Vol:</span>
+                                        <span class="stat-value" id="calStatVolObs">--</span>
+                                    </div>
+                                    <div class="stat-row">
+                                        <span class="stat-label">Total Simulated Vol:</span>
+                                        <span class="stat-value" id="calStatVolSim">--</span>
+                                    </div>
+                                    <div class="stat-row">
+                                        <span class="stat-label">GI Contribution:</span>
+                                        <span class="stat-value" id="calStatGiContrib">--</span>
+                                    </div>
+
+                                    <div class="stat-divider">Kling-Gupta Efficiency</div>
+                                    <div class="stat-row">
+                                        <span class="stat-label" title="KGE = 1 − √((r−1)² + (α−1)² + (β−1)²) — perfect = 1.0">KGE:</span>
+                                        <span class="stat-value kge-value" id="calStatKGE">--</span>
+                                    </div>
+                                    <div class="stat-row">
+                                        <span class="stat-label" title="Pearson correlation — captures timing and shape">r (timing):</span>
+                                        <span class="stat-value" id="calStatKGE_r">--</span>
+                                    </div>
+                                    <div class="stat-row">
+                                        <span class="stat-label" title="Variability ratio σ_sim / σ_obs — ideal = 1.0">α (variability):</span>
+                                        <span class="stat-value" id="calStatKGE_alpha">--</span>
+                                    </div>
+                                    <div class="stat-row">
+                                        <span class="stat-label" title="Bias ratio μ_sim / μ_obs — ideal = 1.0">β (bias):</span>
+                                        <span class="stat-value" id="calStatKGE_beta">--</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div> <!-- End Calibration Tab Content -->
+
+    </main>
+
+    <footer>
+        <p>Based on Infoworks ICM Ground Infiltration Model • <a href="_legacy/GI Sandbox v1.0.xlsm">Original Excel
+                Version</a></p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/hydrograph.js"></script>
+    <script src="js/model.js"></script>
+    <script src="js/schematic.js"></script>
+    <script src="js/sceneView.js"></script>
+    <script src="js/fileParser.js"></script>
+    <script src="js/calibration.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
